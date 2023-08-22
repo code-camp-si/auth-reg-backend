@@ -25,11 +25,11 @@ POST /register
 
 | Parameter | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
-| `full_name`      | `string` | **Required**. Full name of user |
+| `first_name`      | `string` | **Required**. First name of user |
+| `last_name`      | `string` | **Required**. Last name of user |
 | `email`      | `string` | **Required**. User email|
 | `username`      | `string` | **Required**. User username |
 | `password`      | `string` | **Required**. User password |
-
 
 
 
