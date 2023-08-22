@@ -26,15 +26,10 @@ def login_user(request):
     username = request.data.get('username')
     password = request.data.get('password')
     
-    User = get_user_model()
-    user = User.objects.get(username=username)
+    user = authenticate(username=username, password=password)
     
     if user is not None:
-        if user.check_password(password):
-            # return token here
-            return Response({'message': 'Authentication successful'}, status=status.HTTP_200_OK)
-        else:
-            return Response({'message': 'Invalid password.'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'message': 'Authentication successful. Token will be made available soon.'}, status=status.HTTP_200_OK)
     else:
         # User doesn't exist or credentials are invalid
-        return Response({'message': 'User account does not exist.'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'message': 'Invalid username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
