@@ -1,6 +1,8 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAuthenticated
 from .serializers import UserSerializer
 from django.contrib.auth import authenticate
 from .utils import get_tokens_for_user
@@ -37,3 +39,16 @@ def login_user(request):
     else:
         # User doesn't exist or credentials are invalid
         return Response({'message': 'Invalid username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])  
+@permission_classes([IsAuthenticated])        
+def user_profile(request):
+    """
+    Returns user profile if user is authenticated.
+    """
+    
+    serializer = UserSerializer(request.user)
+    return Response({'user_profile': serializer.data}, status=status.HTTP_200_OK)
+    
