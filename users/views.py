@@ -89,3 +89,24 @@ def user_profile(request):
     serializer = UserSerializer(request.user)
     return Response({'user_profile': serializer.data}, status=status.HTTP_200_OK)
     
+
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])  
+@permission_classes([IsAuthenticated])        
+def change_password(request):
+    """
+    Allows an authenticated user to change their password.
+    """
+    
+    user = request.user
+    
+    current_password = request.data.get('current_password')
+    new_password = request.data.get('new_password')
+    
+    if not user.check_password(current_password):
+        return Response({'message': 'Current password is incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    user.set_password(new_password)
+    user.save()
+    
+    return Response({'message': 'Password has been successfully changed.'}, status=status.HTTP_200_OK)
