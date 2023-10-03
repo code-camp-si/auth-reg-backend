@@ -5,15 +5,22 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 from .serializers import UserSerializer
 from django.contrib.auth import authenticate
-from .utils import get_tokens_for_user, create_activation_token_for_user, set_user_to_active, decode_activation_token
 import jwt
-
-
+from .utils import (
+    get_tokens_for_user, 
+    create_activation_token_for_user, 
+    set_user_to_active, 
+    decode_activation_token,
+    send_activation_link,
+    get_client_address,
+    construct_link,
+    )
+    
 
 @api_view(['POST'])
 def register_user(request):
     """
-    Register a new user with the given credentials, and returns an activation token.
+    Register a new user and sends activation link to user email,  and returns user + token details (user name, token lifetime, etc).
     """
     
     serializer = UserSerializer(data=request.data)
@@ -23,18 +30,35 @@ def register_user(request):
         activation_token, exp_time, token_lifetime_in_mins = create_activation_token_for_user(user)
         
         payload = {
-            'message': 'account registration was successful. Send this token to user email to activate the account.',
-            'name': user.first_name,
-            'email': user.email,
-            'activation_token': activation_token,
-            'exp_time': exp_time,
-            'token_lifetime_in_mins': token_lifetime_in_mins,
-        }
-        
-        return Response(data=payload, status=status.HTTP_201_CREATED)
-    
-    return Response(serializer.errors, status=status.HTTP_409_CONFLICT)
+                'user': {
+                        'first_name': user.first_name,
+                        'email': user.email,
+                    },
+                'token_details': {
+                    'exp_time': exp_time,
+                    'token_lifetime_in_mins': token_lifetime_in_mins,
+                }
+            }
 
+        link = construct_link(
+                get_client_address(request), 
+                '/activate-account/', 
+                activation_token,
+            )
+        
+        mail_server_responded, status_code = send_activation_link(user.first_name, user.email, link)
+        
+        if mail_server_responded:
+            payload['status_code'] = status_code
+            payload['message'] = f'Activation mail sent successfully to {user.email}'  
+            
+            return Response(data=payload, status=status.HTTP_200_OK)
+        
+        else:
+            payload['mail_server']['message'] = f'account registration was successful, but activation link failed to send.'
+            return Response({'message': 'cant send email'}, status=status.HTTP_417_EXPECTATION_FAILED)
+        
+    return Response(serializer.errors, status=status.HTTP_409_CONFLICT)
 
 
 @api_view(['GET'])
