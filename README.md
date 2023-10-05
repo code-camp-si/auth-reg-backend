@@ -6,7 +6,9 @@ A simple Authentication & Registration backend API built with the Django REST fr
 
 ### API Reference
 
-#### User Login
+#### 1. User Login
+
+Endpoint security: protected
 
 ```http
 POST /login
@@ -17,7 +19,9 @@ POST /login
 | `username` | `string` | **Required**. User username |
 | `password` | `string` | **Required**. User password |
 
-#### User Registration
+#### 2. User Registration
+
+Endpoint security: open
 
 ```http
 POST /register
@@ -30,6 +34,39 @@ POST /register
 | `email`      | `string` | **Required**. User email|
 | `username`      | `string` | **Required**. User username |
 | `password`      | `string` | **Required**. User password |
+
+#### 3. User Profile
+
+Endpoint security: protected
+
+```http
+GET /profile
+```
+
+#### 4. User Account Activation
+
+Endpoint security: open
+
+```http
+GET /activate-account/?token=[token]
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `token`      | `string` | **Required**. activation token, received from /register |
+
+#### 5. Change Password 
+
+Endpoint security: protected
+
+```http
+POST /change-password
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `current_password`      | `string` | **Required**. current password of user |
+| `current_password`      | `string` | **Required**. new password |
 
 
 
